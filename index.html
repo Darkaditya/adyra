@@ -1,0 +1,342 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Adyra — Jewellery Store</title>
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+<style>
+:root{
+  --primary:#b76e79;
+  --dark:#222;
+  --light:#f9f9f9;
+  --accent:#f3e8ea;
+}
+*{margin:0;padding:0;box-sizing:border-box;font-family:'Poppins',sans-serif;}
+body{background:var(--light);color:var(--dark);}
+header{
+  background:var(--primary);
+  color:#fff;
+  padding:20px;
+  text-align:center;
+}
+header h1{font-size:24px;}
+header p{font-size:14px;opacity:.9;}
+.filters{
+  display:flex;
+  gap:10px;
+  overflow-x:auto;
+  padding:15px;
+  background:#fff;
+}
+.filters button{
+  padding:8px 14px;
+  border:none;
+  background:var(--accent);
+  border-radius:20px;
+  cursor:pointer;
+  font-size:13px;
+}
+.filters button.active{
+  background:var(--primary);
+  color:#fff;
+}
+.products{
+  display:grid;
+  grid-template-columns:repeat(auto-fit,minmax(160px,1fr));
+  gap:15px;
+  padding:15px;
+}
+.card{
+  background:#fff;
+  border-radius:12px;
+  overflow:hidden;
+  box-shadow:0 2px 8px rgba(0,0,0,.05);
+  display:flex;
+  flex-direction:column;
+}
+.card img{
+  width:100%;
+  height:160px;
+  object-fit:cover;
+}
+.card-content{
+  padding:10px;
+  flex:1;
+  display:flex;
+  flex-direction:column;
+}
+.card h3{
+  font-size:14px;
+  margin-bottom:5px;
+}
+.card p{
+  font-size:12px;
+  opacity:.7;
+}
+.price{
+  font-weight:600;
+  margin:6px 0;
+}
+.card button{
+  margin-top:auto;
+  padding:8px;
+  border:none;
+  background:var(--primary);
+  color:#fff;
+  border-radius:6px;
+  cursor:pointer;
+  font-size:13px;
+}
+.cart-icon{
+  position:fixed;
+  bottom:20px;
+  right:20px;
+  background:var(--primary);
+  color:#fff;
+  padding:15px;
+  border-radius:50%;
+  cursor:pointer;
+  font-size:18px;
+}
+.cart-count{
+  position:absolute;
+  top:-5px;
+  right:-5px;
+  background:red;
+  color:#fff;
+  font-size:12px;
+  padding:3px 6px;
+  border-radius:50%;
+}
+.cart-modal{
+  position:fixed;
+  inset:0;
+  background:rgba(0,0,0,.4);
+  display:none;
+  justify-content:center;
+  align-items:flex-end;
+}
+.cart-content{
+  background:#fff;
+  width:100%;
+  max-height:80%;
+  border-radius:20px 20px 0 0;
+  padding:15px;
+  overflow-y:auto;
+}
+.cart-item{
+  display:flex;
+  justify-content:space-between;
+  margin-bottom:10px;
+  font-size:14px;
+}
+.qty-btn{
+  padding:2px 6px;
+  background:var(--accent);
+  border:none;
+  cursor:pointer;
+}
+.total{
+  font-weight:600;
+  margin-top:10px;
+}
+.place-order{
+  width:100%;
+  padding:10px;
+  background:green;
+  color:#fff;
+  border:none;
+  border-radius:8px;
+  margin-top:10px;
+  cursor:pointer;
+}
+form{
+  display:none;
+  padding:15px;
+  background:#fff;
+}
+form input,form textarea{
+  width:100%;
+  padding:8px;
+  margin-bottom:10px;
+  border:1px solid #ccc;
+  border-radius:6px;
+}
+.whatsapp{
+  position:fixed;
+  left:20px;
+  bottom:20px;
+  background:#25D366;
+  color:#fff;
+  padding:12px 16px;
+  border-radius:30px;
+  text-decoration:none;
+  font-size:14px;
+}
+.confirm{
+  padding:15px;
+  text-align:center;
+  display:none;
+}
+</style>
+</head>
+
+<body>
+
+<header>
+<h1>Adyra</h1>
+<p>खूबसूरती जो कभी फीकी न पड़े।</p>
+<p>📍 just one click | 📞 8709189586</p>
+</header>
+
+<div class="filters">
+<button class="active" onclick="filterProducts('all')">All</button>
+<button onclick="filterProducts('jewellery')">Jewellery</button>
+</div>
+
+<div class="products" id="productList"></div>
+
+<div class="cart-icon" onclick="openCart()">🛒
+<span class="cart-count" id="cartCount">0</span>
+</div>
+
+<div class="cart-modal" id="cartModal">
+<div class="cart-content">
+<h3>Your Cart</h3>
+<div id="cartItems"></div>
+<div class="total" id="grandTotal"></div>
+<button class="place-order" onclick="showForm()">Place Order</button>
+</div>
+</div>
+
+<form id="orderForm" action="https://formspree.io/f/YOUR_FORM_ID" method="POST">
+<h3>Delivery Details</h3>
+<input type="text" name="Customer Name" placeholder="Full Name" required>
+<input type="tel" name="Phone Number" placeholder="Phone Number" required>
+<textarea name="Delivery Address" placeholder="Full Address" required></textarea>
+<textarea name="Special Instructions" placeholder="Any special instructions"></textarea>
+<input type="hidden" name="Order Details" id="orderDetails">
+<button type="submit" class="place-order">Submit Order</button>
+</form>
+
+<div class="confirm" id="confirmMsg">
+<h3>Order placed! Adyra will contact you on WhatsApp to confirm.</h3>
+<a href="https://wa.me/918709189586" target="_blank">Chat on WhatsApp</a>
+</div>
+
+<a class="whatsapp" href="https://wa.me/918709189586" target="_blank">Chat on WhatsApp</a>
+
+<script>
+const products=[
+{id:1,name:"Set Of 12 Oxidized Designer Stud Earrings",price:1000,category:"jewellery",img:"https://i.ibb.co/Pvqz5xBv/Screenshot-2026-03-02-210235.png",desc:"खूबसूरती जो दिल जीत ले।"},
+{id:2,name:"Antique Gold Jhumka Earrings",price:1299,category:"jewellery",img:"https://i.ibb.co/Pvqz5xBv/Screenshot-2026-03-02-210235.png",desc:"खूबसूरती जो कभी फीकी न पड़े।"},
+{id:3,name:"Pearl Drop Earrings",price:899,category:"jewellery",img:"https://i.ibb.co/Pvqz5xBv/Screenshot-2026-03-02-210235.png",desc:"Elegant and classy look."},
+{id:4,name:"Oxidized Silver Necklace",price:1499,category:"jewellery",img:"https://i.ibb.co/Pvqz5xBv/Screenshot-2026-03-02-210235.png",desc:"Traditional charm."},
+{id:5,name:"Bridal Choker Set",price:2999,category:"jewellery",img:"https://i.ibb.co/Pvqz5xBv/Screenshot-2026-03-02-210235.png",desc:"Perfect for weddings."},
+{id:6,name:"Kundan Earrings",price:1199,category:"jewellery",img:"https://i.ibb.co/Pvqz5xBv/Screenshot-2026-03-02-210235.png",desc:"Royal ethnic style."},
+{id:7,name:"Gold Plated Bangles",price:999,category:"jewellery",img:"https://i.ibb.co/Pvqz5xBv/Screenshot-2026-03-02-210235.png",desc:"Stylish daily wear."},
+{id:8,name:"Temple Jewellery Set",price:2499,category:"jewellery",img:"https://i.ibb.co/Pvqz5xBv/Screenshot-2026-03-02-210235.png",desc:"South Indian traditional design."}
+];
+
+let cart=JSON.parse(localStorage.getItem("cart"))||[];
+
+function renderProducts(list){
+const container=document.getElementById("productList");
+container.innerHTML="";
+list.forEach(p=>{
+container.innerHTML+=`
+<div class="card">
+<img src="${p.img}" loading="lazy" alt="${p.name}">
+<div class="card-content">
+<h3>${p.name}</h3>
+<p>${p.desc}</p>
+<div class="price">₹${p.price}</div>
+<button onclick="addToCart(${p.id})">Add to Cart</button>
+</div>
+</div>`;
+});
+}
+renderProducts(products);
+
+function filterProducts(cat){
+document.querySelectorAll(".filters button").forEach(btn=>btn.classList.remove("active"));
+event.target.classList.add("active");
+if(cat==="all"){renderProducts(products);}
+else{renderProducts(products.filter(p=>p.category===cat));}
+}
+
+function addToCart(id){
+const item=cart.find(i=>i.id===id);
+if(item){item.qty++;}
+else{cart.push({id,qty:1});}
+updateCart();
+}
+
+function updateCart(){
+localStorage.setItem("cart",JSON.stringify(cart));
+document.getElementById("cartCount").innerText=cart.reduce((a,b)=>a+b.qty,0);
+renderCart();
+}
+updateCart();
+
+function renderCart(){
+const container=document.getElementById("cartItems");
+container.innerHTML="";
+let total=0;
+cart.forEach(item=>{
+const product=products.find(p=>p.id===item.id);
+const subtotal=product.price*item.qty;
+total+=subtotal;
+container.innerHTML+=`
+<div class="cart-item">
+<div>
+${product.name}<br>
+₹${product.price} x ${item.qty}
+</div>
+<div>
+<button class="qty-btn" onclick="changeQty(${item.id},-1)">-</button>
+<button class="qty-btn" onclick="changeQty(${item.id},1)">+</button>
+<button class="qty-btn" onclick="removeItem(${item.id})">x</button>
+</div>
+</div>`;
+});
+document.getElementById("grandTotal").innerText="Total: ₹"+total;
+document.getElementById("orderDetails").value=cart.map(item=>{
+const product=products.find(p=>p.id===item.id);
+return product.name+" x "+item.qty+" = ₹"+(product.price*item.qty);
+}).join("\n")+" \nTotal: ₹"+total;
+}
+
+function changeQty(id,delta){
+const item=cart.find(i=>i.id===id);
+item.qty+=delta;
+if(item.qty<=0){cart=cart.filter(i=>i.id!==id);}
+updateCart();
+}
+
+function removeItem(id){
+cart=cart.filter(i=>i.id!==id);
+updateCart();
+}
+
+function openCart(){
+document.getElementById("cartModal").style.display="flex";
+}
+
+function showForm(){
+document.getElementById("cartModal").style.display="none";
+document.getElementById("orderForm").style.display="block";
+}
+
+document.getElementById("orderForm").addEventListener("submit",function(){
+localStorage.removeItem("cart");
+cart=[];
+document.getElementById("orderForm").style.display="none";
+document.getElementById("confirmMsg").style.display="block";
+});
+</script>
+
+</body>
+</html>
